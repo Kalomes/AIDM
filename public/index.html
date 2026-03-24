@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚔️ AI Deathmatch</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0e1a;
+      --bg2: #12131f;
+      --bg3: #1a1b2e;
+      --border: rgba(255,255,255,0.06);
+      --degen: #f97316;
+      --degen2: #ef4444;
+      --boomer: #6366f1;
+      --boomer2: #8b5cf6;
+      --green: #10b981;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --muted2: #334155;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      text-align: center;
+      padding: 40px 20px 24px;
+      position: relative;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header h1 {
+      font-size: 2.6em;
+      font-weight: 900;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #f97316, #ef4444 40%, #6366f1 70%, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+    }
+    .header p { color: var(--muted); font-size: 0.82em; margin-top: 6px; letter-spacing: 0.5px; }
+
+    /* ── WRAPPER ── */
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 0 20px 40px; }
+
+    /* ── STATUS ── */
+    .status-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 16px; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 0.78em; color: var(--muted); margin-bottom: 12px;
+    }
+    .dot {
+      display: inline-block; width: 7px; height: 7px;
+      border-radius: 50%; background: var(--green);
+      margin-right: 7px; animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .phase-badge {
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 0.85em; font-weight: 600; letter-spacing: 1px;
+    }
+    .phase-live    { background: rgba(16,185,129,0.15); color: #10b981; }
+    .phase-final   { background: rgba(251,191,36,0.15); color: #fbbf24; }
+    .phase-waiting { background: rgba(100,116,139,0.15); color: #64748b; }
+
+    /* ── PRICES ── */
+    .prices-bar {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      padding: 10px 14px; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 10px;
+      margin-bottom: 16px; font-size: 0.76em;
+    }
+    .pi { background: var(--bg3); padding: 4px 10px; border-radius: 20px; }
+    .pi b { color: var(--text); font-weight: 600; margin-left: 4px; }
+
+    /* ── WINNER BANNER ── */
+    .winner-banner {
+      display: none; text-align: center;
+      padding: 14px; border-radius: 12px; margin-bottom: 14px;
+      font-size: 1.2em; font-weight: 700; letter-spacing: 1px;
+      background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(99,102,241,0.1));
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #10b981;
+    }
+
+    /* ── BATTLE GRID ── */
+    .battle-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px; margin-bottom: 16px;
+    }
+
+    /* ── AGENT CARD ── */
+    .agent-card {
+      border-radius: 16px; padding: 22px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      transition: border-color 0.4s, box-shadow 0.4s;
+      position: relative; overflow: hidden;
+    }
+    .agent-card::before {
+      content: '';
+      position: absolute; top: -60px; right: -60px;
+      width: 180px; height: 180px; border-radius: 50%;
+      opacity: 0.07; pointer-events: none;
+    }
+    .degen::before  { background: radial-gradient(circle, #f97316, transparent); }
+    .boomer::before { background: radial-gradient(circle, #6366f1, transparent); }
+
+    .degen.winner  { border-color: rgba(249,115,22,0.5);  box-shadow: 0 0 30px rgba(249,115,22,0.1); }
+    .boomer.winner { border-color: rgba(99,102,241,0.5); box-shadow: 0 0 30px rgba(99,102,241,0.1); }
+
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+
+    .agent-name { font-size: 1.1em; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .degen  .agent-name { color: var(--degen); }
+    .boomer .agent-name { color: var(--boomer); }
+
+    .badge-lev {
+      font-size: 0.65em; padding: 2px 7px; border-radius: 20px; font-weight: 600;
+    }
+    .degen  .badge-lev { background: rgba(249,115,22,0.15); color: var(--degen); }
+    .boomer .badge-lev { background: rgba(99,102,241,0.15); color: var(--boomer); }
+
+    .pnl-block { text-align: right; }
+    .pnl { font-size: 2em; font-weight: 800; letter-spacing: -1px; }
+    .pnl.pos { color: var(--green); }
+    .pnl.neg { color: var(--red); }
+    .pnl.neu { color: #94a3b8; }
+    .change { font-size: 0.82em; margin-top: 2px; font-weight: 500; }
+    .change.pos { color: var(--green); }
+    .change.neg { color: var(--red); }
+    .change.neu { color: var(--muted); }
+
+    .thought {
+      font-size: 0.78em; color: var(--muted); font-style: italic;
+      padding: 8px 12px; background: var(--bg3); border-radius: 8px;
+      margin: 12px 0; line-height: 1.5;
+    }
+
+    /* ── POSITIONS ── */
+    .pos-header {
+      display: flex; justify-content: space-between;
+      font-size: 0.68em; letter-spacing: 1.5px; color: var(--muted2);
+      text-transform: uppercase; margin-bottom: 7px; padding: 0 4px;
+    }
+    .pos-list { display: flex; flex-direction: column; gap: 5px; }
+
+    .pos-row {
+      display: grid;
+      grid-template-columns: 52px 70px 36px 55px 1fr;
+      gap: 6px; align-items: center;
+      padding: 9px 12px; border-radius: 9px;
+      background: var(--bg3); border: 1px solid var(--border);
+      font-size: 0.79em; transition: border-color 0.2s;
+    }
+    .pos-row:hover { border-color: rgba(255,255,255,0.1); }
+    .pos-row.liq { opacity: 0.35; }
+
+    .pos-coin { font-weight: 700; color: var(--text); }
+    .dir-long  { color: var(--green); font-weight: 600; font-size: 0.85em; }
+    .dir-short { color: var(--red);   font-weight: 600; font-size: 0.85em; }
+    .pos-lev  { color: var(--muted); font-size: 0.85em; text-align: center; }
+    .pos-marg { color: var(--muted); }
+    .pos-pnl  { text-align: right; font-weight: 700; }
+    .pos-pnl.pos { color: var(--green); }
+    .pos-pnl.neg { color: var(--red); }
+    .pos-pnl.neu { color: var(--muted); }
+
+    .no-pos { color: var(--muted2); font-size: 0.8em; text-align: center; padding: 18px; }
+
+    .card-footer {
+      display: flex; gap: 16px; margin-top: 12px;
+      padding-top: 10px; border-top: 1px solid var(--border);
+      font-size: 0.72em; color: var(--muted2);
+    }
+    .card-footer b { color: var(--muted); }
+
+    /* ── MARKET ── */
+    .market-section {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; margin-bottom: 16px;
+    }
+    .market-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.72em; font-weight: 600; letter-spacing: 2px;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 12px;
+    }
+    .market-label span {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green); animation: blink 2s infinite;
+    }
+    .market-question { font-size: 1em; font-weight: 500; color: var(--text); margin-bottom: 20px; line-height: 1.5; }
+
+    .bet-buttons { display: flex; gap: 10px; margin-bottom: 14px; }
+    .bet-btn {
+      flex: 1; padding: 14px; border: none; border-radius: 10px;
+      font-size: 1em; font-weight: 700; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: transform 0.15s, filter 0.15s;
+      letter-spacing: 0.5px;
+    }
+    .bet-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .bet-yes { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .bet-no  { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
+    .bet-prices { display: flex; justify-content: space-between; font-size: 0.75em; color: var(--muted); }
+
+    /* ── HISTORY ── */
+    .history-section {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 22px;
+    }
+    .section-title {
+      font-size: 0.72em; font-weight: 600; letter-spacing: 2px;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 14px;
+    }
+    .h-item {
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .h-item:last-child { border-bottom: none; }
+    .h-top {
+      display: flex; gap: 16px; align-items: center;
+      font-size: 0.82em; margin-bottom: 5px;
+    }
+    .h-battle { color: var(--muted); font-weight: 500; }
+    .h-winner { color: var(--green); font-weight: 700; }
+    .h-pnl { color: var(--muted); }
+    .h-pos { font-size: 0.73em; color: var(--muted2); margin-top: 2px; }
+
+    @media(max-width:720px) {
+      .battle-grid { grid-template-columns: 1fr; }
+      .header h1 { font-size: 1.8em; }
+      .pos-row { grid-template-columns: 45px 65px 32px 50px 1fr; font-size: 0.72em; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚔ AI DEATHMATCH</h1>
+  <p>AI agents trade perpetual futures with real Binance data · Long/Short · Up to 50x leverage</p>
+</div>
+
+<div class="wrap">
+
+  <div class="status-bar">
+    <span><span class="dot"></span>LIVE — refreshing every 3s</span>
+    <span id="phaseLabel" class="phase-badge phase-waiting">WAITING</span>
+    <span style="color:#475569">Battle <b style="color:#94a3b8">#<span id="battleCount">0</span></b> &nbsp;·&nbsp; <span id="lastUpdate">—</span></span>
+  </div>
+
+  <div class="prices-bar" id="pricesBar">
+    <span class="pi" style="color:#475569">Loading prices...</span>
+  </div>
+
+  <div id="winnerBanner" class="winner-banner"></div>
+
+  <div class="battle-grid">
+    <!-- DEGEN -->
+    <div class="agent-card degen" id="degenCard">
+      <div class="card-top">
+        <div>
+          <div class="agent-name">
+            🔴 DegenGPT
+            <span class="badge-lev">HIGH RISK</span>
+          </div>
+        </div>
+        <div class="pnl-block">
+          <div class="pnl neu" id="degenPnL">$1,000.00</div>
+          <div class="change neu" id="degenChange">±$0.00</div>
+        </div>
+      </div>
+      <div class="thought" id="degenThought">Warming up...</div>
+      <div class="pos-header">
+        <span>Coin</span><span>Direction</span><span>Lev</span><span>Margin</span><span style="text-align:right">PnL</span>
+      </div>
+      <div class="pos-list" id="degenPositions">
+        <div class="no-pos">Waiting for battle to start...</div>
+      </div>
+      <div class="card-footer">
+        <span>Positions: <b id="degenPosCount">0</b></span>
+        <span>Margin: <b id="degenMarginTotal">$0</b></span>
+        <span>Notional: <b id="degenNotional">$0</b></span>
+      </div>
+    </div>
+
+    <!-- BOOMER -->
+    <div class="agent-card boomer" id="boomerCard">
+      <div class="card-top">
+        <div>
+          <div class="agent-name">
+            🔵 BoomerAI
+            <span class="badge-lev">HEDGED</span>
+          </div>
+        </div>
+        <div class="pnl-block">
+          <div class="pnl neu" id="boomerPnL">$1,000.00</div>
+          <div class="change neu" id="boomerChange">±$0.00</div>
+        </div>
+      </div>
+      <div class="thought" id="boomerThought">Warming up...</div>
+      <div class="pos-header">
+        <span>Coin</span><span>Direction</span><span>Lev</span><span>Margin</span><span style="text-align:right">PnL</span>
+      </div>
+      <div class="pos-list" id="boomerPositions">
+        <div class="no-pos">Waiting for battle to start...</div>
+      </div>
+      <div class="card-footer">
+        <span>Positions: <b id="boomerPosCount">0</b></span>
+        <span>Margin: <b id="boomerMarginTotal">$0</b></span>
+        <span>Notional: <b id="boomerNotional">$0</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARKET -->
+  <div class="market-section">
+    <div class="market-label"><span></span> Prediction Market</div>
+    <div class="market-question" id="marketQuestion">Battle starting soon...</div>
+    <div class="bet-buttons">
+      <button class="bet-btn bet-yes" onclick="placeBet('YES')">✅ BET YES</button>
+      <button class="bet-btn bet-no"  onclick="placeBet('NO')">❌ BET NO</button>
+    </div>
+    <div class="bet-prices">
+      <span>YES price: $0.45 &nbsp;·&nbsp; NO price: $0.55</span>
+      <span>Volume: $<span id="marketVolume">0</span> &nbsp;·&nbsp; <span id="mktTime">—</span></span>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-section">
+    <div class="section-title">📜 Battle History</div>
+    <div id="historyList"><div class="no-pos">No battles yet</div></div>
+  </div>
+
+</div>
+
+<script>
+  function fmt(n, dec=2) {
+    return parseFloat(n || 0).toFixed(dec);
+  }
+
+  function renderPositions(positions, listId, countId, marginId, notionalId) {
+    const list = document.getElementById(listId);
+    if (!positions || positions.length === 0) {
+      list.innerHTML = '<div class="no-pos">No open positions</div>';
+      document.getElementById(countId).textContent = '0';
+      document.getElementById(marginId).textContent = '$0';
+      document.getElementById(notionalId).textContent = '$0';
+      return;
+    }
+
+    let tm = 0, tn = 0;
+    list.innerHTML = positions.map(p => {
+      tm += p.margin || 0;
+      tn += p.notional || 0;
+      const pnl = parseFloat(p.pnl || 0);
+      const sign = pnl >= 0 ? '+' : '';
+      const pc = pnl > 0.005 ? 'pos' : pnl < -0.005 ? 'neg' : 'neu';
+      const dc = p.direction === 'long' ? 'dir-long' : 'dir-short';
+      const dt = p.direction === 'long' ? '▲ LONG' : '▼ SHORT';
+      const rc = p.liquidated ? ' liq' : '';
+      const lq = p.liquidated ? ' 💀' : '';
+      return `<div class="pos-row${rc}">
+        <span class="pos-coin">${p.coin}</span>
+        <span class="${dc}">${dt}</span>
+        <span class="pos-lev">${p.leverage}x</span>
+        <span class="pos-marg">$${p.margin}</span>
+        <span class="pos-pnl ${pc}">${sign}$${fmt(pnl)}${lq}</span>
+      </div>`;
+    }).join('');
+
+    document.getElementById(countId).textContent = positions.length;
+    document.getElementById(marginId).textContent = '$' + fmt(tm, 0);
+    document.getElementById(notionalId).textContent = '$' + parseInt(tn).toLocaleString();
+  }
+
+  function setPnL(pnlId, chId, pnl, change) {
+    const pe = document.getElementById(pnlId);
+    const ce = document.getElementById(chId);
+    pe.textContent = '$' + fmt(pnl);
+    pe.className = 'pnl ' + (change > 0.01 ? 'pos' : change < -0.01 ? 'neg' : 'neu');
+    ce.textContent = (change >= 0 ? '+' : '') + '$' + fmt(change);
+    ce.className = 'change ' + (change > 0.01 ? 'pos' : change < -0.01 ? 'neg' : 'neu');
+  }
+
+  async function refresh() {
+    try {
+      const d = await fetch('/market.json?t=' + Date.now()).then(r => r.json());
+
+      const phase = d.phase || 'waiting';
+      const pb = document.getElementById('phaseLabel');
+      pb.textContent = phase.toUpperCase();
+      pb.className = 'phase-badge phase-' + phase;
+      document.getElementById('battleCount').textContent = d.battleCount || 0;
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+
+      // Prices
+      if (d.prices && Object.keys(d.prices).length > 0) {
+        document.getElementById('pricesBar').innerHTML =
+          Object.entries(d.prices)
+            .map(([k, v]) => `<span class="pi">${k}<b>$${parseFloat(v).toLocaleString(undefined,{maximumFractionDigits:4})}</b></span>`)
+            .join('');
+      }
+
+      const ag = d.agents || {};
+      const dg = ag.DegenGPT || {};
+      const ba = ag.BoomerAI  || {};
+
+      setPnL('degenPnL', 'degenChange', dg.pnl || 1000, dg.change || 0);
+      setPnL('boomerPnL','boomerChange', ba.pnl || 1000, ba.change || 0);
+
+      document.getElementById('degenThought').textContent  = dg.thought || '...';
+      document.getElementById('boomerThought').textContent = ba.thought || '...';
+
+      // *** POSITIONS ***
+      renderPositions(dg.positions, 'degenPositions', 'degenPosCount', 'degenMarginTotal', 'degenNotional');
+      renderPositions(ba.positions, 'boomerPositions','boomerPosCount','boomerMarginTotal','boomerNotional');
+
+      // Winner
+      const dc = document.getElementById('degenCard');
+      const bc = document.getElementById('boomerCard');
+      const wb = document.getElementById('winnerBanner');
+      dc.classList.remove('winner'); bc.classList.remove('winner');
+
+      if (d.winner && phase !== 'waiting') {
+        wb.style.display = 'block';
+        wb.textContent = '🏆 ' + d.winner + ' IS WINNING!';
+        (d.winner === 'DegenGPT' ? dc : bc).classList.add('winner');
+      } else {
+        wb.style.display = 'none';
+      }
+
+      // Market
+      if (d.market) {
+        document.getElementById('marketQuestion').textContent = d.market.question;
+        document.getElementById('marketVolume').textContent = (d.market.volume||0).toLocaleString();
+        document.getElementById('mktTime').textContent = new Date().toLocaleTimeString();
+      }
+
+      // History
+      if (d.history?.length > 0) {
+        document.getElementById('historyList').innerHTML = [...d.history].reverse().map(h => `
+          <div class="h-item">
+            <div class="h-top">
+              <span class="h-battle">Battle #${h.battle}</span>
+              <span class="h-winner">🏆 ${h.winner}</span>
+              <span class="h-pnl">🔴 $${h.degenPnL}</span>
+              <span class="h-pnl">🔵 $${h.boomerPnL}</span>
+            </div>
+            <div class="h-pos">🔴 ${h.degenPos || '—'}</div>
+            <div class="h-pos">🔵 ${h.boomerPos || '—'}</div>
+          </div>`).join('');
+      }
+    } catch(e) { console.log('refresh err:', e.message); }
+  }
+
+  function placeBet(side) {
+    const q = document.getElementById('marketQuestion').textContent;
+    window.ethereum
+      ? alert(`🎯 ${side} bet!\n\n${q}\n\nWeb3 integration coming.`)
+      : alert(`🦊 Connect MetaMask to bet ${side}!`);
+  }
+
+  refresh();
+  setInterval(refresh, 3000);
+</script>
+</body>
+</html>

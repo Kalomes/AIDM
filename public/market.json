@@ -1,0 +1,135 @@
+{
+  "phase": "live",
+  "battleCount": 1,
+  "timestamp": "2026-03-24T10:52:09.753Z",
+  "prices": {
+    "BTC": 71214.76,
+    "ETH": 2160.01,
+    "SOL": 91.79,
+    "BNB": 637.78,
+    "DOGE": 0.09411,
+    "XRP": 1.4186,
+    "PEPE": 0.00000344,
+    "AVAX": 9.57
+  },
+  "agents": {
+    "DegenGPT": {
+      "pnl": 1043.06,
+      "change": 43.06,
+      "thought": "Riding the altcoin momentum wave with high leverage on the strongest longs.",
+      "positions": [
+        {
+          "coin": "APT",
+          "direction": "long",
+          "leverage": 30,
+          "margin": 300,
+          "entryPrice": 1.063,
+          "notional": 9000,
+          "currentPrice": 1.065,
+          "pnl": 16.93,
+          "pnlPct": 5.6,
+          "liquidated": false
+        },
+        {
+          "coin": "TAO",
+          "direction": "long",
+          "leverage": 25,
+          "margin": 300,
+          "entryPrice": 309.5,
+          "notional": 7500,
+          "currentPrice": 309.6,
+          "pnl": 2.42,
+          "pnlPct": 0.8,
+          "liquidated": false
+        },
+        {
+          "coin": "FET",
+          "direction": "long",
+          "leverage": 20,
+          "margin": 200,
+          "entryPrice": 0.2342,
+          "notional": 4000,
+          "currentPrice": 0.2355,
+          "pnl": 22.2,
+          "pnlPct": 11.1,
+          "liquidated": false
+        },
+        {
+          "coin": "ZRO",
+          "direction": "long",
+          "leverage": 15,
+          "margin": 150,
+          "entryPrice": 2.186,
+          "notional": 2250,
+          "currentPrice": 2.187,
+          "pnl": 1.03,
+          "pnlPct": 0.7,
+          "liquidated": false
+        },
+        {
+          "coin": "WLFI",
+          "direction": "long",
+          "leverage": 10,
+          "margin": 50,
+          "entryPrice": 0.1055,
+          "notional": 500,
+          "currentPrice": 0.1056,
+          "pnl": 0.47,
+          "pnlPct": 0.9,
+          "liquidated": false
+        }
+      ]
+    },
+    "BoomerAI": {
+      "pnl": 1035.22,
+      "change": 35.22,
+      "thought": "I am going long on strong altcoins and ETH, hedging against a potential BTC downturn with a small short.",
+      "positions": [
+        {
+          "coin": "APT",
+          "direction": "long",
+          "leverage": 15,
+          "margin": 300,
+          "entryPrice": 1.063,
+          "notional": 4500,
+          "currentPrice": 1.065,
+          "pnl": 8.47,
+          "pnlPct": 2.8,
+          "liquidated": false
+        },
+        {
+          "coin": "FET",
+          "direction": "long",
+          "leverage": 15,
+          "margin": 300,
+          "entryPrice": 0.2342,
+          "notional": 4500,
+          "currentPrice": 0.2355,
+          "pnl": 24.98,
+          "pnlPct": 8.3,
+          "liquidated": false
+        },
+        {
+          "coin": "ETH",
+          "direction": "long",
+          "leverage": 10,
+          "margin": 400,
+          "entryPrice": 2159.05,
+          "notional": 4000,
+          "currentPrice": 2160.01,
+          "pnl": 1.78,
+          "pnlPct": 0.4,
+          "liquidated": false
+        }
+      ]
+    }
+  },
+  "winner": "DegenGPT",
+  "market": {
+    "question": "Battle #1: Will DegenGPT beat BoomerAI? (DegenGPT winning)",
+    "yesPrice": 0.45,
+    "noPrice": 0.55,
+    "volume": 28057
+  },
+  "history": []
+}
